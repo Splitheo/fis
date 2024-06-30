@@ -1,0 +1,93 @@
+import pygame
+import random
+import math
+white = (255,255,255)
+dis = pygame.display.set_mode((800,800))
+run = True
+clock = pygame.time.Clock()
+crv = 1
+listadebolas = []
+cores = []
+
+class Bola():
+    def __init__(self, x, y, vx, vy, raio, massa):
+        self.x = x
+        self.y = y
+        self.vy = vy
+        self.vx = vx
+        self.raio = raio
+        self.massa = massa
+        return [x, y, vx, vy, raio, massa]
+
+numerodebolas = int(input("Escreva o numero de bolas: "))
+listadebolas = []
+
+for i in range(numerodebolas):
+    b = Bola.__init__(Bola, random.randint(31, 769), random.randint(31, 769), random.uniform(-2, 2), random.uniform(-2, 2), 30, random.uniform(1, 5))
+    """b = Bola.__init__(Bola, 100 + 600 * i, 400 + 15*i, 1 - i, 0, 30, 1)"""
+    listadebolas.append(b)
+for i in listadebolas:
+    cor = ( 0, 0, i[5]*50)
+    cores.append(cor)
+
+while run:
+    clock.tick(60)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+
+    dis.fill(white)
+    n = 0
+    for i in listadebolas:
+        pygame.draw.circle(dis, cores[n], (i[0], i[1]), i[4])
+        n+=1
+
+    for i in listadebolas:
+        i[0] += i[2]
+        i[1] += i[3]
+        if i[0] + i[4] > 800 or i[0] - i[4] < 0:
+            i[2] = -i[2]
+        if i[1] + i[4] > 800 or i[1] - i[4] < 0:
+            i[3] = -i[3]
+        if i[0] > 770:
+            i[0] = 769
+        if i[1] > 770:
+            i[1] = 769
+        if i[0] < 30:
+            i[0] = 31
+        if i[1] < 30:
+            i[1] = 31
+        for j in listadebolas:
+            if j != i:
+                if math.sqrt((i[0] - j[0]) * (i[0] - j[0]) + (i[1] - j[1]) * (i[1] - j[1])) <= 60:
+                    if i[0] - j[0] == 0 or i[1] - j[1] == 0:
+                        vcmx = (i[5]*i[2] + j[5]*j[2])/(i[5] + j[5])
+                        vcmy = (i[5]*i[3] + j[5]*j[3])/(i[5] + j[5])
+                        i[2] = (crv + 1)*vcmx - crv * i[2]
+                        i[3] = (crv + 1)*vcmy - crv * i[3]
+                        j[2] = (crv + 1)*vcmx - crv * j[2]
+                        j[3] = (crv + 1)*vcmy - crv * j[3]                    
+                    else:
+                        vti = math.sqrt(i[2] * i[2] + i[3] * i[3])
+                        vtj = math.sqrt(j[2] * j[2] + j[3] * j[3])
+                        rcm = (i[0] - j[0])/(i[1] - j[1])
+                        angulo = math.atan(rcm)
+                        if j[1] < i[1]:
+                            vrescmx1 = vti * -math.sin(angulo)
+                            vrescmy1 = vti * -math.cos(angulo)
+                            vrescmx2 = vtj * math.sin(angulo)
+                            vrescmy2 = vtj * math.cos(angulo)
+                        else:
+                            vrescmx1 = vti * math.sin(angulo)
+                            vrescmy1 = vti * math.cos(angulo)
+                            vrescmx2 = vtj * -math.sin(angulo)
+                            vrescmy2 = vtj * -math.cos(angulo)
+                        vcmx = (i[5]*vrescmx1 + j[5]*vrescmx2)/(i[5] + j[5])
+                        vcmy = (i[5]*vrescmy1 + j[5]*vrescmy2)/(i[5] + j[5])
+                        i[2] = (crv + 1)*vcmx - crv * vrescmx1
+                        i[3] = (crv + 1)*vcmy - crv * vrescmy1
+                        j[2] = (crv + 1)*vcmx - crv * vrescmx2
+                        j[3] = (crv + 1)*vcmy - crv * vrescmy2
+
+    pygame.display.update()
+pygame.quit()
